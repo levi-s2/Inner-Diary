@@ -9,7 +9,7 @@ function Diary() {
     const [category, setCategory] = useState('')
 
     useEffect(() => {
-        fetch('http://localhost:3001/entries')
+        fetch('http://localhost:3000/entries')
         .then(r => r.json())
         .then(r => setEntries(r))
         .catch(err => console.error('Error fetching entries: ', err))
@@ -26,7 +26,7 @@ function Diary() {
             category
         }
 
-        fetch('http://localhost:3001/entries', {
+        fetch('http://localhost:3000/entries', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -42,6 +42,17 @@ function Diary() {
         })
         .catch(e => console.error('Error saving new entry: ', e))
     };
+
+    function handleDelete(id) {
+        fetch(`http://localhost:3000/entries/${id}`, {
+            method: 'DELETE',
+        })
+        .then(()=> {
+            setEntries(prev => prev.filter(entry => entry.id !== id))
+        })
+        .catch(err => console.error('Error deleting entry: ', err))
+    };
+
 
     return (
         <div>
@@ -79,7 +90,7 @@ function Diary() {
 
   <button type="submit">Add</button>
 </form>
-    <Entries entries={entries} />
+    <Entries entries={entries} handleDelete={handleDelete}/>
         </div>
     );
 }
