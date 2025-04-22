@@ -1,98 +1,125 @@
 import React, { useState, useEffect } from "react";
-import Entries from './Entries';
+import {
+  Box,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  Grid,
+  Paper
+} from "@mui/material";
+import Entries from "./Entries";
 
+export default function Diary() {
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [date, setDate] = useState("");
+  const [category, setCategory] = useState("");
+  const [entries, setEntries] = useState([]);
 
-function Diary() {
-    const [text, setText] = useState('');
-    const [entries, setEntries] = useState([]);
-    const [date, setDate] = useState('')
-    const [category, setCategory] = useState('')
+  useEffect(() => {
+    fetch("http://localhost:3000/entries")
+      .then(r => r.json())
+      .then(data => setEntries(data))
+      .catch(err => console.error(err));
+  }, []);
 
-    useEffect(() => {
-        fetch('http://localhost:3000/entries')
-        .then(r => r.json())
-        .then(r => setEntries(r))
-        .catch(err => console.error('Error fetching entries: ', err))
-    }, [])
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title || !text || !date || !category) return;
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const newEntry = { title, text, date, category };
+    fetch("http://localhost:3000/entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newEntry)
+    })
+      .then(r => r.json())
+      .then(saved => {
+        setEntries(prev => [...prev, saved]);
+        setTitle(""); setText(""); setDate(""); setCategory("");
+      });
+  };
 
-        if (text.trim() === '' || date.trim() === '' || category.trim() === '') return;
+  const handleDelete = (id) => {
+    fetch(`http://localhost:3000/entries/${id}`, { method: "DELETE" })
+      .then(() => setEntries(prev => prev.filter(e => e.id !== id)));
+  };
 
-        const newEntry = {
-            text,
-            date,
-            category
-        }
+  return (
+    <Box p={4}>
+      <Typography variant="h4" gutterBottom>
+        My Diary
+      </Typography>
 
-        fetch('http://localhost:3000/entries', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newEntry)
-        })
-        .then(r => r.json())
-        .then(savedEntry => {
-            setEntries(prev => [...prev, savedEntry])
-            setText('')
-            setDate('')
-            setCategory('')
-        })
-        .catch(e => console.error('Error saving new entry: ', e))
-    };
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+            />
+          </Grid>
 
-    function handleDelete(id) {
-        fetch(`http://localhost:3000/entries/${id}`, {
-            method: 'DELETE',
-        })
-        .then(()=> {
-            setEntries(prev => prev.filter(entry => entry.id !== id))
-        })
-        .catch(err => console.error('Error deleting entry: ', err))
-    };
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={date}
+              onChange={e => setDate(e.target.value)}
+            />
+          </Grid>
 
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
+              <InputLabel id="category-label">Category</InputLabel>
+              <Select
+                labelId="category-label"
+                label="Category"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+              >
+                <MenuItem value="personal">Personal</MenuItem>
+                <MenuItem value="daily">Daily</MenuItem>
+                <MenuItem value="secret">Secret</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-    return (
-        <div>
-            <h1>My Diary</h1>
-            <form onSubmit={handleSubmit}>
-  <label htmlFor="entry">Entry</label>
-  <input
-    type="text"
-    id="entry"
-    value={text}
-    onChange={(e) => setText(e.target.value)}
-    placeholder="Write something..."
-  />
+          <Grid item xs={12} md={3}>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ height: "100%" }}
+              onClick={handleSubmit}
+            >
+              Add Entry
+            </Button>
+          </Grid>
 
-  <label htmlFor="date">Date</label>
-  <input
-    type="date"
-    id="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-    placeholder="Date"
-  />
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Entry Text"
+              multiline
+              minRows={4}
+              value={text}
+              onChange={e => setText(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
 
-  <label htmlFor="category">Category</label>
-  <select
-    id="category"
-    value={category}
-    onChange={(e) => setCategory(e.target.value)}
-  >
-    <option value="">Select a category</option>
-    <option value="personal">Personal</option>
-    <option value="daily">Daily</option>
-    <option value="secret">Secret</option>
-  </select>
-
-  <button type="submit">Add</button>
-</form>
-    <Entries entries={entries} handleDelete={handleDelete}/>
-        </div>
-    );
+      {/* Entries list */}
+      <Entries entries={entries} handleDelete={handleDelete} />
+    </Box>
+  );
 }
-
-export default Diary;

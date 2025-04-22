@@ -1,11 +1,18 @@
 {
   "entries": [
     {
-      "id": "37c6",
-      "text": "today was a good day!",
-      "date": "2025-04-20",
+      "id": "b969",
+      "title": "Progress!",
+      "text": "today I made substancial progress in the development of the application",
+      "date": "2025-04-22",
       "category": "daily"
     }
   ],
-  "notes": []
+  "notes": [
+    {
+      "id": "0bec",
+      "note": "feed the cat",
+      "isCompleted": false
+    }
+  ]
 }
