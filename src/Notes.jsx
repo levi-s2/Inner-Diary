@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Checkbox,
+  IconButton
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function Notes() {
   const [noteText, setNoteText] = useState("");
@@ -17,7 +31,6 @@ function Notes() {
     if (!trimmed) return;
 
     const newNote = { note: trimmed, isCompleted: false };
-
     fetch("http://localhost:3000/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,43 +70,61 @@ function Notes() {
   };
 
   return (
-    <div>
-      <h1>Notes</h1>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={noteText}
-          onChange={(e) => setNoteText(e.target.value)}
-          placeholder="Write a note..."
-        />
-        <button type="submit">Add Note</button>
-      </form>
-
+    <Box p={4}>
+      <Typography variant="h4" gutterBottom>
+        Notes
+      </Typography>
+      <Paper sx={{ p: 2, mb: 4 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", gap: 2 }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            label="Write a note…"
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+          />
+          <Button type="submit" variant="contained" color="primary">
+            Add Note
+          </Button>
+        </Box>
+      </Paper>
       {notes.length === 0 ? (
-        <p>No notes yet. Add one above!</p>
+        <Typography>No notes yet. Add one above!</Typography>
       ) : (
-        <ul>
-          {notes.map(({ id, note, isCompleted }) => (
-            <li key={id}>
-              <input
-                type="checkbox"
-                checked={isCompleted}
-                onChange={() => toggleCompletion(id, isCompleted)}
-              />
-              <span
-                style={{
-                  textDecoration: isCompleted ? "line-through" : "none",
-                }}
+        <Paper sx={{ p: 2 }}>
+          <List>
+            {notes.map(({ id, note, isCompleted }) => (
+              <ListItem
+                key={id}
+                secondaryAction={
+                  <IconButton edge="end" onClick={() => deleteNote(id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                }
               >
-                {note}
-              </span>
-              <button onClick={() => deleteNote(id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={isCompleted}
+                    onChange={() => toggleCompletion(id, isCompleted)}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  primary={note}
+                  sx={{
+                    textDecoration: isCompleted ? "line-through" : "none",
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 }
 
